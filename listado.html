@@ -1,0 +1,318 @@
+<!-- Despliega de forma ordenada un listado con información de
+ejemplo del sistema. Este listado contiene más información que la mostrada en la
+portada. Debe considerar la siguiente información:
+Inicio Término Comuna Sector Tema Nombre Organizador total fotos
+... ... ... ... ... ...
+Para esta tarea invente los datos y muestre 5 filas de información. Al hacer clic sobre
+cualquier fila del listado, debe mostrar de forma ordenada toda la información
+correspondiente a la actividad, considerando al final un botón o enlace que permite
+volver al listado de actividades y otro que permite volver a la portada. Al mostrar la
+información de una actividad en particular, debe incluir fotos de un tamaño 320x240
+píxeles y al hacer clic sobre una foto, la debe mostrar de tamaño 800x600 píxeles
+incluyendo un enlace o botón “cerrar” que permite cerrar la visualización de la foto en
+dicho tamaño. -->
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Actividades</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+        th {
+            background-color: #2962FF;
+            color: white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 850px;
+        }
+        .close-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .back-btn {
+            background-color: #00838F;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        #detalleActividad {
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .foto-container {
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Listado de Actividades</h1>
+        <nav>
+            <a href="portada.html">Inicio</a>
+        </nav>
+    </header>
+
+    <main>
+        <table id="actividadesTable">
+            <thead>
+                <tr>
+                    <th>Inicio</th>
+                    <th>Término</th>
+                    <th>Comuna</th>
+                    <th>Sector</th>
+                    <th>Tema</th>
+                    <th>Nombre Organizador</th>
+                    <th>Total Fotos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Las filas se generarán con JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- Detalle de actividad -->
+        <div id="detalleActividad" style="display:none;">
+            <!-- Contenido dinámico se cargará aquí -->
+        </div>
+
+        <!-- Modal para mostrar fotos en tamaño grande -->
+        <div id="fotoModal" class="modal">
+            <div class="modal-content">
+                <div id="fotoGrande"></div>
+                <button class="close-btn" onclick="cerrarModal()">Cerrar</button>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Datos de ejemplo basados en la portada.html
+        const actividades = [
+            {
+                id: 1,
+                inicio: '2025-10-31 15:00',
+                termino: '2025-11-03 12:00',
+                comuna: 'Isla de Maipo',
+                sector: 'Camping Los Puentes',
+                tema: 'Convención Circo',
+                nombre: 'Cata',
+                fotos: ['img/320x240/jugg.jpeg'],
+                fotosGrande: ['img/800x600/jugg.jpeg'],
+                totalFotos: 1,
+                email: 'cata@cimac.cl',
+                descripcion: 'Convención internacional de malabares, acrobacias y artes circenses. Habrá talleres para todos los niveles.'
+            },
+            {
+                id: 2,
+                inicio: '2025-06-21 08:00',
+                termino: '-',
+                comuna: 'Las Condes',
+                sector: 'Escuela Militar',
+                tema: 'Go Skate Day',
+                nombre: 'Kfiolo',
+                fotos: ['img/320x240/skate.jpeg'],
+                fotosGrande: ['img/800x600/skate.jpeg'],
+                totalFotos: 1,
+                email: 'kfiolo@skateday.cl',
+                descripcion: 'Celebración del día mundial del skateboard con competencias y exhibiciones.'
+            },
+            {
+                id: 3,
+                inicio: '2025-07-05 16:00',
+                termino: '2025-07-06 14:00',
+                comuna: 'Providencia',
+                sector: 'Parque Inés de Suárez',
+                tema: 'Parkour Jam',
+                nombre: 'Seba',
+                fotos: ['img/320x240/parkour.jpeg'],
+                fotosGrande: ['img/800x600/parkour.jpeg'],
+                totalFotos: 1,
+                email: 'seba@parkour-chile.cl',
+                descripcion: 'Encuentro de practicantes de parkour de todo el país con entrenamientos abiertos y talleres gratuitos.'
+            },
+            {
+                id: 4,
+                inicio: '2025-01-07 09:00',
+                termino: '2025-01-08 20:00',
+                comuna: 'Colina',
+                sector: 'Santuario Empatía',
+                tema: 'Voluntariado',
+                nombre: 'Eli',
+                fotos: ['img/320x240/sant.jpeg'],
+                fotosGrande: ['img/800x600/sant.jpeg'],
+                totalFotos: 1,
+                email: 'eli@santuario-empatia.org',
+                descripcion: 'Jornada de voluntariado para ayudar a animales rescatados en el santuario.'
+            },
+            {
+                id: 5,
+                inicio: '2025-04-05 10:00',
+                termino: '2025-11-15 18:00',
+                comuna: 'Ñuñoa',
+                sector: 'JGM',
+                tema: 'TIF',
+                nombre: 'Alejandro',
+                fotos: ['img/320x240/kungfu.jpeg', 'img/320x240/kungfu2.jpeg', 'img/320x240/kungfu3.jpeg'],
+                fotosGrande: ['img/800x600/kungfu.jpeg', 'img/800x600/kungfu2.jpeg', 'img/800x600/kungfu3.jpeg'],
+                totalFotos: 3,
+                descripcion: 'Torneo interfacultades de artes marciales. Habrá exhibiciones, competencias y seminarios.',
+                email: 'tif@deporteazul.cl',
+                celular: '+569.87654321',
+                redes: [
+                    {tipo: 'Instagram', url: '@deporteazul'},
+                    {tipo: 'Facebook', url: 'facebook.com/deporteazul'}
+                ]
+            }
+        ];
+
+        // Cargar los datos en la tabla
+        function cargarTabla() {
+            const tbody = document.querySelector('#actividadesTable tbody');
+            tbody.innerHTML = '';
+            
+            actividades.forEach(actividad => {
+                const row = document.createElement('tr');
+                row.onclick = function() { mostrarActividad(actividad.id); };
+                
+                row.innerHTML = `
+                    <td>${actividad.inicio}</td>
+                    <td>${actividad.termino}</td>
+                    <td>${actividad.comuna}</td>
+                    <td>${actividad.sector}</td>
+                    <td>${actividad.tema}</td>
+                    <td>${actividad.nombre}</td>
+                    <td>${actividad.totalFotos}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Mostrar detalles de la actividad
+        function mostrarActividad(id) {
+            const actividad = actividades.find(a => a.id === id);
+            if (actividad) {
+                const detalleDiv = document.getElementById('detalleActividad');
+                
+                // Generar HTML para fotos
+                let fotosHTML = '<h3>Fotos</h3><div class="fotos-container">';
+                for (let i = 0; i < actividad.fotos.length; i++) {
+                    fotosHTML += `
+                        <div class="foto-container">
+                            <img src="${actividad.fotos[i]}" alt="Foto ${i+1}" width="320" height="240" 
+                                 onclick="mostrarFoto('${actividad.fotosGrande[i]}')">
+                        </div>
+                    `;
+                }
+                fotosHTML += '</div>';
+                
+                // Generar HTML para redes sociales (si existen)
+                let redesHTML = '';
+                if (actividad.redes && actividad.redes.length > 0) {
+                    redesHTML = '<h3>Redes de contacto</h3><ul>';
+                    actividad.redes.forEach(red => {
+                        redesHTML += `<li>${red.tipo}: ${red.url}</li>`;
+                    });
+                    redesHTML += '</ul>';
+                }
+                
+                detalleDiv.innerHTML = `
+                    <h2>${actividad.tema}</h2>
+                    <p><strong>Inicio:</strong> ${actividad.inicio}</p>
+                    <p><strong>Término:</strong> ${actividad.termino}</p>
+                    <p><strong>Comuna:</strong> ${actividad.comuna}</p>
+                    <p><strong>Sector:</strong> ${actividad.sector}</p>
+                    <p><strong>Organizador:</strong> ${actividad.nombre}</p>
+                    <p><strong>Email:</strong> ${actividad.email}</p>
+                    ${actividad.descripcion ? `<p><strong>Descripción:</strong> ${actividad.descripcion}</p>` : ''}
+                    ${actividad.celular ? `<p><strong>Celular:</strong> ${actividad.celular}</p>` : ''}
+                    ${redesHTML}
+                    ${fotosHTML}
+                    <div style="margin-top: 20px">
+                        <button class="back-btn" onclick="volverListado()">Volver al Listado</button>
+                        <button class="back-btn" onclick="window.location.href='portada.html'">Volver a la Portada</button>
+                    </div>
+                `;
+                
+                // Ocultar tabla y mostrar detalles
+                document.getElementById('actividadesTable').style.display = 'none';
+                detalleDiv.style.display = 'block';
+            }
+        }
+
+        // Mostrar foto en tamaño grande
+        function mostrarFoto(foto) {
+            const modal = document.getElementById('fotoModal');
+            const fotoGrandeDiv = document.getElementById('fotoGrande');
+            
+            fotoGrandeDiv.innerHTML = `<img src="${foto}" alt="Foto" width="800" height="600">`;
+            modal.style.display = 'block';
+        }
+
+        // Cerrar modal de foto grande
+        function cerrarModal() {
+            document.getElementById('fotoModal').style.display = 'none';
+        }
+
+        // Volver al listado
+        function volverListado() {
+            document.getElementById('detalleActividad').style.display = 'none';
+            document.getElementById('actividadesTable').style.display = 'table';
+        }
+
+        // Inicializar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarTabla();
+            
+            // Cerrar modal al hacer clic fuera de la imagen
+            window.onclick = function(event) {
+                const modal = document.getElementById('fotoModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!-- Despliega 3 gráficos (pueden ser imágenes) para los cuales debe
+inventar los datos. El primero es un gráfico de líneas que informa la cantidad de
+actividades por día. En el eje X muestra los días y en el eje Y muestra la cantidad de
+actividades. El segundo gráfico es un gráfico de torta que muestra el total de actividades
+por tipo. El tercer gráfico es uno de barras que muestra tres barras por cada punto del
+eje X. El eje X son los meses y para cada mes muestra una barra con la cantidad de
+actividades que se inician en la mañana, la cantidad de actividades que se inician al
+mediodía y la cantidad de actividades de la tarde. El eje Y indica la cantidad. Al final de
+esta pantalla debe agregar un enlace que permite volver a la portada del sistema. -->
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estadísticas</title>
+    <style>
+        .chart-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+        .chart-image {
+            max-width: 25%;
+            height: auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .back-link {
+            display: block;
+            margin: 30px 0;
+            text-align: center;
+            font-size: 18px;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Estadísticas de Actividades</h1>
+    
+    <div class="chart-container">
+        <h2>Actividades por día</h2>
+        <img class="chart-image" src="img/lineas.jpeg" alt="Gráfico de líneas mostrando actividades por día">
+        <p>Este gráfico muestra la cantidad de actividades programadas por cada día de la semana.</p>
+    </div>
+    
+    <div class="chart-container">
+        <h2>Distribución de actividades por tema</h2>
+        <img class="chart-image" src="img/torta.jpeg" alt="Gráfico circular mostrando distribución de temas">
+        <p>Este gráfico muestra la proporción de actividades según su tema.</p>
+    </div>
+    
+    <div class="chart-container">
+        <h2>Actividades por horario y mes</h2>
+        <img class="chart-image" src="img/barras.jpeg" alt="Gráfico de barras mostrando actividades por horario y mes">
+        <p>Este gráfico compara la cantidad de actividades programadas en horarios de mañana, mediodía y tarde en los últimos meses.</p>
+    </div>
+    
+    <a class="back-link" href="portada.html">Volver a la portada</a>
+</body>
+</html>
