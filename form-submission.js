@@ -1,55 +1,45 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Capturar elementos del DOM
     const submitBtn = document.getElementById('submit-btn');
-    const confirmationDialog = document.getElementById('confirmation-dialog');
-    const confirmYesBtn = document.getElementById('confirm-yes');
-    const confirmNoBtn = document.getElementById('confirm-no');
+    const confirmDialog = document.getElementById('confirmation-dialog');
+    const confirmYes = document.getElementById('confirm-yes');
+    const confirmNo = document.getElementById('confirm-no');
     const successMessage = document.getElementById('success-message');
-    const backToHomeBtn = document.getElementById('back-to-home');
-    const form = document.querySelector('form');
-    
-    if (submitBtn && confirmationDialog && form) {
-        // Mostrar diálogo de confirmación al hacer clic en "Agregar esta actividad"
-        submitBtn.addEventListener('click', function() {
-            if (form.checkValidity()) {
-                // Verificar que al menos un tema esté seleccionado
-                const checkedTemas = document.querySelectorAll('.tema-checkbox:checked');
-                if (checkedTemas.length === 0) {
-                    document.getElementById('tema-validation-message').style.display = 'block';
-                    return;
-                }
-                
-                // Mostrar el diálogo de confirmación
-                confirmationDialog.style.display = 'block';
-            } else {
-                form.reportValidity();
-            }
-        });
-    }
-    
-    if (confirmYesBtn && successMessage) {
-        // Manejar clic en "Sí, estoy seguro"
-        confirmYesBtn.addEventListener('click', function() {
-            // Ocultar el formulario y la confirmación
-            if (form) form.style.display = 'none';
-            confirmationDialog.style.display = 'none';
-            
-            // Mostrar mensaje de éxito
-            successMessage.style.display = 'block';
-        });
-    }
-    
-    if (confirmNoBtn) {
-        // Manejar clic en "No, no estoy seguro"
-        confirmNoBtn.addEventListener('click', function() {
-            confirmationDialog.style.display = 'none';
-        });
-    }
-    
-    if (backToHomeBtn) {
-        // Manejar clic en "Volver a la portada"
-        backToHomeBtn.addEventListener('click', function() {
-            window.location.href = 'portada.html';
-        });
-    }
+    const backToHome = document.getElementById('back-to-home');
+    const form = document.getElementById('activityForm');
+
+    // Al hacer clic en "Agregar esta actividad"
+    submitBtn.addEventListener('click', function() {
+        // Validar el formulario una sola vez usando las validaciones nativas del HTML
+        if (!form.checkValidity()) {
+            // Esto activará los mensajes de error nativos del navegador
+            form.reportValidity();
+            return;
+        }
+        
+        // Validaciones adicionales que no se pueden hacer con HTML
+        if (!validateForm()) {
+            return;
+        }
+        
+        // Si pasa todas las validaciones, mostrar diálogo de confirmación
+        confirmDialog.style.display = 'block';
+    });
+
+    // Al hacer clic en "Sí, estoy seguro"
+    confirmYes.addEventListener('click', function() {
+        confirmDialog.style.display = 'none';
+        successMessage.style.display = 'block';
+        form.style.display = 'none';
+        submitBtn.style.display = 'none';
+    });
+
+    // Al hacer clic en "No, no estoy seguro"
+    confirmNo.addEventListener('click', function() {
+        confirmDialog.style.display = 'none';
+    });
+
+    // Al hacer clic en "Volver a la portada"
+    backToHome.addEventListener('click', function() {
+        window.location.href = 'portada.html';
+    });
 });
