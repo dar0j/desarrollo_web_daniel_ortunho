@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informar actividad</title>
+    <link rel="icon" href="data:,">
+    <style>
+        .error {
+            color: red;
+        }
+        .contact-input-container, .otro-tema-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Agregar actividad</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    {% if errors %}
+        <div class="error">
+            <p>Por favor corrija los siguientes errores:</p>
+            <ul>
+                {% for error in errors.values() %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <form action="{{ url_for('agregar_actividad') }}" method="post" id="activityForm" enctype="multipart/form-data">
+        <h2>¿Dónde?</h2>
+        <label for="region">Región:</label>
+        <select name="region" id="region" required>
+            <option value="">Seleccione una región</option>
+        </select><br><br>
+
+        <label for="comuna">Comuna:</label>
+        <select name="comuna" id="comuna" required>
+            <option value="">Seleccione una comuna</option>
+        </select><br><br>
+
+        <label for="sector">Sector (opcional):</label>
+        <input type="text" id="sector" name="sector" maxlength="100"><br><br>
+
+        <h2>¿Quién organiza?</h2>
+        <label for="organizador">Nombre:</label>
+        <input type="text" id="organizador" name="organizador" maxlength="200" required><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" maxlength="100" pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,3}$" placeholder="hola@ejemplo.com" required><br><br>
+
+        <label for="cel">Número de celular (opcional):</label>
+        <input type="tel" id="cel" name="cel" pattern="\+[0-9]{3}\.[0-9]{8}" placeholder="+569.12345678"><br><br>
+
+        <fieldset>
+            <legend>Contactar por (opcional, máx. 5):</legend>
+            <div id="contacto-options">
+                <div class="contact-option">
+                    <input type="checkbox" id="contacto-wsp" name="contacto[]" value="whatsapp" class="contact-checkbox">
+                    <label for="contacto-wsp">WhatsApp</label>
+                    <div class="contact-input-container">
+                        <label for="idurl-wsp">ID/URL:</label>
+                        <input type="text" id="idurl-wsp" name="idurl-wsp" minlength="4" maxlength="50">
+                    </div>
+                </div>
+                
+                <div class="contact-option">
+                    <input type="checkbox" id="contacto-tg" name="contacto[]" value="telegram" class="contact-checkbox">
+                    <label for="contacto-tg">Telegram</label>
+                    <div class="contact-input-container">
+                        <label for="idurl-tg">ID/URL:</label>
+                        <input type="text" id="idurl-tg" name="idurl-tg" minlength="4" maxlength="50">
+                    </div>
+                </div>
+                
+                <div class="contact-option">
+                    <input type="checkbox" id="contacto-x" name="contacto[]" value="X" class="contact-checkbox">
+                    <label for="contacto-x">X</label>
+                    <div class="contact-input-container">
+                        <label for="idurl-x">ID/URL:</label>
+                        <input type="text" id="idurl-x" name="idurl-x" minlength="4" maxlength="50">
+                    </div>
+                </div>
+                
+                <div class="contact-option">
+                    <input type="checkbox" id="contacto-ig" name="contacto[]" value="instagram" class="contact-checkbox">
+                    <label for="contacto-ig">Instagram</label>
+                    <div class="contact-input-container">
+                        <label for="idurl-ig">ID/URL:</label>
+                        <input type="text" id="idurl-ig" name="idurl-ig" minlength="4" maxlength="50">
+                    </div>
+                </div>
+                
+                <div class="contact-option">
+                    <input type="checkbox" id="contacto-tk" name="contacto[]" value="tiktok" class="contact-checkbox">
+                    <label for="contacto-tk">TikTok</label>
+                    <div class="contact-input-container">
+                        <label for="idurl-tk">ID/URL:</label>
+                        <input type="text" id="idurl-tk" name="idurl-tk" minlength="4" maxlength="50">
+                    </div>
+                </div>
+                
+                <div class="contact-option">
+                    <input type="checkbox" id="contacto-other" name="contacto[]" value="otra" class="contact-checkbox">
+                    <label for="contacto-other">Otro</label>
+                    <div class="contact-input-container">
+                        <label for="idurl-other">ID/URL:</label>
+                        <input type="text" id="idurl-other" name="idurl-other" minlength="4" maxlength="50">
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <h2>¿Cuándo y de qué trata?</h2>
+        <label for="fecha_inicio">Día y hora de inicio:</label>
+        <input type="datetime-local" id="fecha_inicio" name="fecha_inicio" required><br><br>
+
+        <label for="fecha_termino">Día y hora de término (opcional):</label>
+        <input type="datetime-local" id="fecha_termino" name="fecha_termino"><br><br>
+        
+        <div style="display: flex; align-items: flex-start;">
+            <label for="desc" style="margin-right: 10px;">Descripción (opcional):</label>
+            <textarea id="desc" name="desc" rows="10" cols="50"></textarea><br><br>
+        </div>
+
+        <fieldset>
+            <legend>Tema (seleccione al menos uno):</legend>
+            <div id="tema-options">
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-musica" name="tema[]" value="música" class="tema-checkbox">
+                    <label for="tema-musica">Música</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-deporte" name="tema[]" value="deporte" class="tema-checkbox">
+                    <label for="tema-deporte">Deporte</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-ciencias" name="tema[]" value="ciencias" class="tema-checkbox">
+                    <label for="tema-ciencias">Ciencias</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-religion" name="tema[]" value="religión" class="tema-checkbox">
+                    <label for="tema-religion">Religión</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-politica" name="tema[]" value="política" class="tema-checkbox">
+                    <label for="tema-politica">Política</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-tecnologia" name="tema[]" value="tecnología" class="tema-checkbox">
+                    <label for="tema-tecnologia">Tecnología</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-juegos" name="tema[]" value="juegos" class="tema-checkbox">
+                    <label for="tema-juegos">Juegos</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-baile" name="tema[]" value="baile" class="tema-checkbox">
+                    <label for="tema-baile">Baile</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-comida" name="tema[]" value="comida" class="tema-checkbox">
+                    <label for="tema-comida">Comida</label>
+                </div>
+                <div class="tema-option">
+                    <input type="checkbox" id="tema-otro" name="tema[]" value="otro" class="tema-checkbox">
+                    <label for="tema-otro">Otro</label>
+                    <div class="otro-tema-container">
+                        <label for="otro-tema">Especifique tema:</label>
+                        <input type="text" id="otro-tema" name="otro-tema" minlength="3" maxlength="15">
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <div id="tema-validation-message" style="color: red; display: none;">
+            Por favor, seleccione al menos un tema.
+        </div>
+
+        <div id="photos-container">
+            <div>
+                <label for="foto1">Foto (máx. 5):</label>
+                <input type="file" id="foto1" name="foto1" required accept="image/*">
+                <br><br>
+            </div>
+    
+            <button type="button" id="add-photo">Agregar otra foto</button><br><br>
+        </div>
+
+        <button type="submit" id="submit-btn">Agregar esta actividad</button>
+    </form>
+
+    <div id="confirmation-dialog" style="display: none; border: 1px solid #ccc; padding: 20px; margin-top: 20px;">
+        <p>¿Está seguro que desea agregar esta actividad?</p>
+        <button type="button" id="confirm-yes">Sí, estoy seguro</button>
+        <button type="button" id="confirm-no">No, no estoy seguro, quiero volver al formulario</button>
+    </div>
+
+    <div id="success-message" style="display: none; border: 1px solid green; padding: 20px; margin-top: 20px;">
+        <p>Hemos recibido su información, muchas gracias y suerte en su actividad</p>
+        <button type="button" id="back-to-home">Volver a la portada</button>
+    </div>
+
+    <script type="module" src="{{ url_for('static', filename='js/select.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/validations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/form-submission.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Actividades</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+        th {
+            background-color: #2962FF;
+            color: white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 850px;
+        }
+        .close-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .back-btn {
+            background-color: #00838F;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        #detalleActividad {
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .foto-container {
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .pagination {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .pagination a {
+            color: black;
+            padding: 8px 16px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            margin: 0 4px;
+        }
+        .pagination a.active {
+            background-color: #2962FF;
+            color: white;
+            border: 1px solid #2962FF;
+        }
+        .pagination a:hover:not(.active) {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Listado de Actividades</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Inicio</a>
+        </nav>
+    </header>
+
+    <main>
+        <table id="actividadesTable">
+            <thead>
+                <tr>
+                    <th>Inicio</th>
+                    <th>Término</th>
+                    <th>Comuna</th>
+                    <th>Sector</th>
+                    <th>Tema</th>
+                    <th>Nombre Organizador</th>
+                    <th>Total Fotos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for actividad in actividades %}
+                    <tr onclick="mostrarActividad({{ actividad.id }})">
+                        <td>{{ actividad.dia_hora_inicio.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ actividad.dia_hora_termino.strftime('%Y-%m-%d %H:%M') if actividad.dia_hora_termino else '-' }}</td>
+                        <td>{{ actividad.comuna.nombre }}</td>
+                        <td>{{ actividad.sector or '-' }}</td>
+                        <td>
+                            {% for tema in actividad.temas %}
+                                {{ tema.tema }}{% if tema.glosa_otro %} ({{ tema.glosa_otro }}){% endif %}
+                                {% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ actividad.nombre }}</td>
+                        <td>{{ actividad.fotos|length }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7">No hay actividades registradas</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if pagination.pages > 1 %}
+            <div class="pagination">
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                            <a class="active" href="{{ url_for('listado', page=page_num) }}">{{ page_num }}</a>
+                        {% else %}
+                            <a href="{{ url_for('listado', page=page_num) }}">{{ page_num }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span>...</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div id="detalleActividad" style="display:none;">
+            <!-- Contenido dinámico se cargará aquí -->
+        </div>
+
+        <!-- Modal para mostrar fotos en tamaño grande -->
+        <div id="fotoModal" class="modal">
+            <div class="modal-content">
+                <div id="fotoGrande"></div>
+                <button class="close-btn" onclick="cerrarModal()">Cerrar</button>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Función para cargar y mostrar los detalles de una actividad
+        function mostrarActividad(id) {
+            fetch(`/actividad/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar la actividad');
+                    }
+                    return response.json();
+                })
+                .then(actividad => {
+                    const detalleDiv = document.getElementById('detalleActividad');
+                    
+                    let fotosHTML = '<h3>Fotos</h3><div class="fotos-container">';
+                    if (actividad.fotos.length > 0) {
+                        for (let i = 0; i < actividad.fotos.length; i++) {
+                            fotosHTML += `
+                                <div class="foto-container">
+                                    <img src="${actividad.fotos[i].ruta}" alt="${actividad.fotos[i].nombre}" width="320" height="240" 
+                                         onclick="mostrarFoto('${actividad.fotos[i].ruta}')">
+                                </div>
+                            `;
+                        }
+                    } else {
+                        fotosHTML += '<p>No hay fotos disponibles</p>';
+                    }
+                    fotosHTML += '</div>';
+                    
+                    let redesHTML = '';
+                    if (actividad.contactos && actividad.contactos.length > 0) {
+                        redesHTML = '<h3>Redes de contacto</h3><ul>';
+                        actividad.contactos.forEach(contacto => {
+                            redesHTML += `<li>${contacto.tipo}: ${contacto.identificador}</li>`;
+                        });
+                        redesHTML += '</ul>';
+                    }
+                    
+                    let temasHTML = '<h3>Temas</h3><ul>';
+                    actividad.temas.forEach(tema => {
+                        temasHTML += `<li>${tema.tema}${tema.otro ? ' (' + tema.otro + ')' : ''}</li>`;
+                    });
+                    temasHTML += '</ul>';
+                    
+                    detalleDiv.innerHTML = `
+                        <h2>${actividad.temas.length > 0 ? actividad.temas[0].tema : 'Actividad'}</h2>
+                        <p><strong>Inicio:</strong> ${actividad.inicio}</p>
+                        <p><strong>Término:</strong> ${actividad.termino || '-'}</p>
+                        <p><strong>Comuna:</strong> ${actividad.comuna}</p>
+                        <p><strong>Sector:</strong> ${actividad.sector || '-'}</p>
+                        <p><strong>Organizador:</strong> ${actividad.organizador}</p>
+                        <p><strong>Email:</strong> ${actividad.email}</p>
+                        ${actividad.celular ? `<p><strong>Celular:</strong> ${actividad.celular}</p>` : ''}
+                        ${actividad.descripcion ? `<p><strong>Descripción:</strong> ${actividad.descripcion}</p>` : ''}
+                        ${temasHTML}
+                        ${redesHTML}
+                        ${fotosHTML}
+                        <div style="margin-top: 20px">
+                            <button class="back-btn" onclick="volverListado()">Volver al Listado</button>
+                            <button class="back-btn" onclick="window.location.href='/'">Volver a la Portada</button>
+                        </div>
+                    `;
+                    
+                    // Ocultar tabla y mostrar detalles
+                    document.getElementById('actividadesTable').style.display = 'none';
+                    document.querySelector('.pagination').style.display = 'none';
+                    detalleDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar los detalles de la actividad');
+                });
+        }
+
+        // Mostrar foto en tamaño grande
+        function mostrarFoto(foto) {
+            const modal = document.getElementById('fotoModal');
+            const fotoGrandeDiv = document.getElementById('fotoGrande');
+            
+            fotoGrandeDiv.innerHTML = `<img src="${foto}" alt="Foto" width="800" height="600">`;
+            modal.style.display = 'block';
+        }
+
+        function cerrarModal() {
+            document.getElementById('fotoModal').style.display = 'none';
+        }
+
+        function volverListado() {
+            document.getElementById('detalleActividad').style.display = 'none';
+            document.getElementById('actividadesTable').style.display = 'table';
+            document.querySelector('.pagination').style.display = 'block';
+        }
+
+        // Cerrar modal al hacer clic fuera de la imagen
+        window.onclick = function(event) {
+            const modal = document.getElementById('fotoModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>

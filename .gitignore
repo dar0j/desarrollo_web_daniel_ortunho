@@ -1,0 +1,8 @@
+# Ignore SQL files
+*.sql
+
+# Ignore virtualenv
+venv/
+
+# Python
+__pycache__/
