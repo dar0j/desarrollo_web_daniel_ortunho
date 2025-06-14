@@ -151,22 +151,63 @@
             </div>
         {% endif %}
 
-        <div id="detalleActividad" style="display:none;">
-            <!-- Contenido dinámico se cargará aquí -->
-        </div>
+        <div id="info-actividad" style="display: none;">
+                    <div id="detalleActividad" style="display:none;">
+                        <!-- Contenido dinámico se cargará aquí -->
+                    </div>
 
-        <!-- Modal para mostrar fotos en tamaño grande -->
-        <div id="fotoModal" class="modal">
-            <div class="modal-content">
-                <div id="fotoGrande"></div>
-                <button class="close-btn" onclick="cerrarModal()">Cerrar</button>
+                    <!-- Mostrar fotos en tamaño grande -->
+                    <div id="fotoModal" class="modal">
+                        <div class="modal-content">
+                            <div id="fotoGrande"></div>
+                            <button class="close-btn" onclick="cerrarModal()">Cerrar</button>
+                        </div>
+                    </div>
+            
+            <div id="comentarios-section" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+                <h3>Comentarios</h3>
+                
+                <!-- Formulario para agregar comentario -->
+                <div id="formulario-comentario" style="background-color: #f9f9f9; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                    <h4>Agregar un comentario</h4>
+                    <form id="comentario-form">
+                        <div style="margin-bottom: 10px;">
+                            <label for="comentario-nombre">Nombre*:</label><br>
+                            <input type="text" id="comentario-nombre" name="nombre" minlength="3" maxlength="80" required style="width: 300px; padding: 5px;">
+                            <div id="error-nombre" class="error-message" style="color: red; font-size: 12px; display: none;"></div>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <label for="comentario-texto">Comentario*:</label><br>
+                            <textarea id="comentario-texto" name="texto" rows="4" cols="50" minlength="5" maxlength="300" required style="padding: 5px;"></textarea>
+                            <div id="error-texto" class="error-message" style="color: red; font-size: 12px; display: none;"></div>
+                        </div>
+                        
+                        <button type="submit" id="btn-agregar-comentario" style="background-color: #007bff; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                            Agregar comentario
+                        </button>
+                        
+                        <div id="mensaje-comentario" style="margin-top: 10px; display: none;"></div>
+                    </form>
+                </div>
+                
+                <!-- Lista de comentarios -->
+                <div id="lista-comentarios">
+                    <h4>Comentarios</h4>
+                    <div id="comentarios-container">
+                        <!-- Los comentarios se cargarán aquí con JavaScript -->
+                    </div>
+                </div>
             </div>
         </div>
+
     </main>
     
     <script>
+        let actividadActualId = null;
         // Función para cargar y mostrar los detalles de una actividad
         function mostrarActividad(id) {
+            actividadActualId = id;
             fetch(`/actividad/${id}`)
                 .then(response => {
                     if (!response.ok) {
@@ -235,7 +276,140 @@
                     console.error('Error:', error);
                     alert('Error al cargar los detalles de la actividad');
                 });
+                cargarComentarios(id);
         }
+
+        async function cargarComentarios(actividadId) {
+            try {
+                const response = await fetch(`/api/actividad/${actividadId}/comentarios`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarComentarios(data.comentarios);
+                } else {
+                    console.error('Error al cargar comentarios:', data.error);
+                }
+            } catch (error) {
+                console.error('Error al cargar comentarios:', error);
+            }
+        }
+
+        // Función para mostrar comentarios en el DOM
+        function mostrarComentarios(comentarios) {
+            const container = document.getElementById('comentarios-container');
+            
+            if (comentarios.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-style: italic;">No hay comentarios aún. ¡Sé el primero en comentar!</p>';
+                return;
+            }
+            
+            let html = '';
+            comentarios.forEach(comentario => {
+                html += `
+                    <div class="comentario" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; background-color: white;">
+                        <div style="font-weight: bold; color: #333;">${escapeHtml(comentario.nombre)}</div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">${comentario.fecha}</div>
+                        <div style="color: #444;">${escapeHtml(comentario.texto)}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        // Función para escapar HTML (prevenir XSS)
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        //Envío del formulario de comentario
+        document.getElementById('comentario-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!actividadActualId) return;
+            
+            const nombre = document.getElementById('comentario-nombre').value.trim();
+            const texto = document.getElementById('comentario-texto').value.trim();
+            
+            // Limpiar mensajes previos
+            document.getElementById('error-nombre').style.display = 'none';
+            document.getElementById('error-texto').style.display = 'none';
+            document.getElementById('mensaje-comentario').style.display = 'none';
+            
+            let errores = false;
+            
+            if (!nombre || nombre.length < 3 || nombre.length > 80) {
+                document.getElementById('error-nombre').textContent = 'El nombre debe tener entre 3 y 80 caracteres';
+                document.getElementById('error-nombre').style.display = 'block';
+                errores = true;
+            }
+            
+            if (!texto || texto.length < 5 || texto.length > 300) {
+                document.getElementById('error-texto').textContent = 'El comentario debe tener entre 5 y 300 caracteres';
+                document.getElementById('error-texto').style.display = 'block';
+                errores = true;
+            }
+            
+            if (errores) return;
+            
+            try {
+                const response = await fetch(`/api/actividad/${actividadActualId}/comentarios`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nombre: nombre,
+                        texto: texto
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('comentario-form').reset();
+                    
+                    // Mostrar mensaje de éxito
+                    const mensaje = document.getElementById('mensaje-comentario');
+                    mensaje.textContent = data.message;
+                    mensaje.style.color = 'green';
+                    mensaje.style.display = 'block';
+                    
+                    // Recargar comentarios
+                    cargarComentarios(actividadActualId);
+                    
+                    setTimeout(() => {
+                        mensaje.style.display = 'none';
+                    }, 3000);
+                    
+                } else {
+                    // Mostrar errores del servidor
+                    if (data.errors) {
+                        if (data.errors.nombre) {
+                            document.getElementById('error-nombre').textContent = data.errors.nombre;
+                            document.getElementById('error-nombre').style.display = 'block';
+                        }
+                        if (data.errors.texto) {
+                            document.getElementById('error-texto').textContent = data.errors.texto;
+                            document.getElementById('error-texto').style.display = 'block';
+                        }
+                    } else {
+                        const mensaje = document.getElementById('mensaje-comentario');
+                        mensaje.textContent = 'Error al agregar comentario: ' + (data.error || 'Error desconocido');
+                        mensaje.style.color = 'red';
+                        mensaje.style.display = 'block';
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error al agregar comentario:', error);
+                const mensaje = document.getElementById('mensaje-comentario');
+                mensaje.textContent = 'Error de conexión al agregar comentario';
+                mensaje.style.color = 'red';
+                mensaje.style.display = 'block';
+            }
+        });
 
         // Mostrar foto en tamaño grande
         function mostrarFoto(foto) {
