@@ -196,7 +196,10 @@
             <button type="button" id="add-photo">Agregar otra foto</button><br><br>
         </div>
 
-        <button type="submit" id="submit-btn">Agregar esta actividad</button>
+        <div style="margin-top: 20px;">
+            <button type="submit" id="submit-btn">Agregar esta actividad</button>
+            <button type="button" id="back-to-home-btn" onclick="window.location.href='{{ url_for('index') }}'">Volver a la portada</button>
+        </div>
     </form>
 
     <div id="confirmation-dialog" style="display: none; border: 1px solid #ccc; padding: 20px; margin-top: 20px;">
