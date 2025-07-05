@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Evaluar Actividades</title>
+</head>
+<body>
+  <h2>Actividades Finalizadas</h2>
+  <table border="1" id="tablaActividades">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Fecha Inicio</th>
+        <th>Sector</th>
+        <th>Nombre</th>
+        <th>Tema</th>
+        <th>Nota</th>
+        <th>Evaluar</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function cargarActividades() {
+      const res = await fetch('/api/actividades/finalizadas');
+      const data = await res.json();
+      const tbody = document.querySelector('#tablaActividades tbody');
+      tbody.innerHTML = '';
+
+      data.forEach(act => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${act.id}</td>
+          <td>${act.fechaInicio}</td>
+          <td>${act.sector || '-'}</td>
+          <td>${act.nombre}</td>
+          <td>${act.tema}</td>
+          <td class="nota">${act.nota}</td>
+          <td><button onclick="evaluar(${act.id}, this)">Evaluar</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function evaluar(id, btn) {
+      const nota = parseInt(prompt("Ingrese una nota entre 1 y 7:"));
+      if (isNaN(nota) || nota < 1 || nota > 7) {
+        alert("Nota inválida.");
+        return;
+      }
+
+      const res = await fetch(`/api/actividades/${id}/notas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nota })
+      });
+
+      if (res.ok) {
+        alert("Nota agregada");
+        cargarActividades(); // Recarga para actualizar promedio
+      } else {
+        alert("Error al agregar nota");
+      }
+    }
+
+    cargarActividades();
+  </script>
+</body>
+</html>
